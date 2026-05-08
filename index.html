@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFLIX: Friends Homework</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;600;800;900&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fr: {
+                            purple: '#312e81',    /* Monica's door purple */
+                            purpleDark: '#1e1b4b',
+                            yellow: '#fde047',    /* Frame yellow */
+                            red: '#ef4444',
+                            blue: '#3b82f6',
+                            green: '#22c55e'      /* Central Perk green */
+                        }
+                    },
+                    fontFamily: {
+                        hand: ['Patrick Hand', 'cursive'],
+                        base: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #e0e7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background-image: radial-gradient(#93c5fd 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        /* Mobile Container Simulation */
+        #mobile-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100dvh;
+            max-height: 850px;
+            background-color: #1e1b4b;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(49, 46, 129, 0.4);
+        }
+
+        @media (min-width: 480px) {
+            #mobile-container {
+                height: 90vh;
+                border-radius: 2rem;
+                border: 8px solid #fde047;
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Screen Transitions */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            background-color: #1e1b4b;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10;
+        }
+        .screen.active { transform: translateX(0); z-index: 20; }
+        .screen.previous { transform: translateX(-100%); z-index: 10; }
+
+        /* Option Buttons */
+        .option-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .option-btn:active { transform: scale(0.98); }
+        .option-btn.selected {
+            border-color: #fde047;
+            background-color: rgba(253, 224, 71, 0.15);
+            box-shadow: 0 4px 15px rgba(253, 224, 71, 0.2);
+            transform: translateY(-2px);
+        }
+        .option-btn.correct {
+            border-color: #22c55e;
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        .option-btn.wrong {
+            border-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Action Button */
+        .fr-action-btn {
+            background-color: #fde047;
+            color: #1e1b4b;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 12px;
+            box-shadow: 0 6px 0px #ca8a04;
+            transition: all 0.15s ease;
+        }
+        .fr-action-btn:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0 0px #ca8a04;
+        }
+        .fr-action-btn:disabled {
+            background-color: #475569;
+            color: #94a3b8;
+            box-shadow: 0 6px 0px #1e293b;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- DEVICE CONTAINER -->
+    <div id="mobile-container">
+
+        <!-- STATUS BAR -->
+        <div class="h-8 bg-fr-purple text-white flex justify-between items-center px-4 text-xs font-bold z-50 shrink-0 uppercase tracking-widest border-b border-fr-purpleDark">
+            <span id="clock">09:00</span>
+            <div class="flex gap-2 items-center">
+                <span>CENTRAL PERK WI-FI</span>
+                <span>☕ 100%</span>
+            </div>
+        </div>
+
+        <!-- SCREEN 1: LOGIN -->
+        <div id="screen-login" class="screen active flex items-center justify-center p-6 text-center">
+            <div class="z-10 w-full flex flex-col items-center">
+                <div class="w-32 h-32 border-8 border-fr-yellow bg-fr-purple flex items-center justify-center mb-8 shadow-2xl relative">
+                    <!-- Peephole simulation -->
+                    <div class="w-8 h-8 bg-black rounded-full absolute top-4"></div>
+                    <span class="text-6xl mt-4">🛋️</span>
+                </div>
+                
+                <h2 class="font-bold text-xs tracking-widest text-fr-yellow mb-2 uppercase border border-fr-yellow px-3 py-1 rounded-full">Episode Review</h2>
+                <h1 class="font-hand text-6xl tracking-widest mb-4 text-white uppercase drop-shadow-md">Friends</h1>
+                <p class="font-base text-sm font-medium text-indigo-200 mb-12 italic leading-relaxed bg-black/20 p-4 rounded-xl border border-white/10">
+                    "The one where you prove your English skills. Let's see if you were paying attention."
+                </p>
+
+                <button onclick="startQuiz()" class="w-full fr-action-btn py-4">
+                    START EPISODE
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: QUIZ -->
+        <div id="screen-quiz" class="screen flex flex-col">
+            <!-- Header -->
+            <header class="bg-fr-purple border-b-4 border-fr-yellow p-4 shrink-0 flex items-center justify-between z-10 shadow-md">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl drop-shadow-sm">☕</span>
+                    <span class="font-hand text-white uppercase tracking-widest text-xl mt-1" id="q-category">VOCABULARY</span>
+                </div>
+                <span class="font-black text-fr-purpleDark bg-fr-yellow px-2 py-1 rounded shadow-sm text-sm" id="q-counter">1/15</span>
+            </header>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-2 bg-fr-purpleDark shrink-0 z-10">
+                <div id="progress-bar" class="h-full bg-fr-yellow transition-all duration-300 shadow-[0_0_10px_#fde047]" style="width: 0%;"></div>
+            </div>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col z-10 bg-fr-purpleDark relative">
+                
+                <!-- Background decoration -->
+                <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#ffffff 2px, transparent 2px); background-size: 30px 30px;"></div>
+
+                <!-- Question Text -->
+                <h2 id="q-text" class="text-2xl font-black text-white mb-8 leading-relaxed bg-fr-purple p-6 rounded-2xl border border-indigo-400/30 shadow-lg relative z-10">
+                    Question goes here?
+                </h2>
+
+                <!-- Options Grid -->
+                <div id="options-container" class="flex flex-col gap-4 mb-8 relative z-10">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <!-- Spacer -->
+                <div class="flex-1"></div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="hidden mb-6 p-4 rounded-xl font-bold text-sm border-2 text-center shadow-lg relative z-10 uppercase tracking-widest font-hand text-xl">
+                    Feedback goes here
+                </div>
+
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="p-4 bg-fr-purple shrink-0 z-10">
+                <button id="btn-next" onclick="handleNext()" disabled class="w-full fr-action-btn py-4">
+                    CONFIRM ANSWER
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULTS -->
+        <div id="screen-results" class="screen flex flex-col relative overflow-hidden bg-fr-purpleDark">
+            <header class="bg-black/50 text-white p-4 shrink-0 text-center border-b border-white/10 z-10">
+                <span class="font-bold uppercase tracking-widest text-xs text-fr-yellow">CREDITS ROLL</span>
+            </header>
+
+            <div class="flex-1 flex flex-col items-center justify-center p-8 text-center z-10">
+                <div id="result-icon" class="text-8xl mb-6 drop-shadow-[0_0_20px_rgba(253,224,71,0.4)]">🏆</div>
+                <h1 id="result-title" class="text-4xl font-hand text-fr-yellow uppercase tracking-widest mb-2">Central Perk VIP</h1>
+                <p id="result-subtitle" class="text-sm font-bold text-indigo-300 mb-8 uppercase tracking-widest border-b border-indigo-800 w-full pb-4">Score: <span id="final-score" class="font-black text-white text-xl">15</span> / 15</p>
+                
+                <div class="w-full bg-fr-purple p-6 border border-indigo-400/30 rounded-2xl shadow-xl mb-10">
+                    <p id="result-msg" class="font-base text-sm text-indigo-100 italic leading-relaxed">
+                        "Could you BE any smarter? You aced it!"
+                    </p>
+                </div>
+
+                <button onclick="restartApp()" class="w-full fr-action-btn py-4">
+                    REWATCH EPISODE
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. Clock Update ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 2. Questions Database (15 Questions - A1 Level) ---
+        const questions = [
+            // VOCABULARY: CLOTHES & CONTEXT
+            {
+                category: "Vocabulary",
+                question: "What do you wear on your legs?",
+                options: ["A shirt", "Pants", "A tie"],
+                correctIndex: 1,
+                explanation: "Pants (or trousers) are worn on the legs."
+            },
+            {
+                category: "Vocabulary",
+                question: "What do you wear over a shirt when it is cold?",
+                options: ["Underwear", "Shoes", "A sweater"],
+                correctIndex: 2,
+                explanation: "A sweater keeps you warm."
+            },
+            {
+                category: "Vocabulary",
+                question: "What goes around your neck when you wear a suit?",
+                options: ["A belt", "A tie", "A mug"],
+                correctIndex: 1,
+                explanation: "A tie is worn around the neck."
+            },
+            {
+                category: "Slang & Culture",
+                question: "What does the expression 'going commando' mean?",
+                options: [
+                    "To wear military clothes.",
+                    "To wear NO underwear.",
+                    "To run very fast."
+                ],
+                correctIndex: 1,
+                explanation: "Joey says he is 'going commando' (not wearing underwear)."
+            },
+            {
+                category: "Vocabulary",
+                question: "Joey and Chandler live in the same apartment. They are...",
+                options: ["Roommates", "Enemies", "Teachers"],
+                correctIndex: 0,
+                explanation: "People who share an apartment are called roommates."
+            },
+            // GRAMMAR 1: PRESENT CONTINUOUS
+            {
+                category: "Grammar: Pres. Cont.",
+                question: "Complete the sentence: 'I ___ wearing a shirt.'",
+                options: ["am", "is", "are"],
+                correctIndex: 0,
+                explanation: "We use 'am' with 'I' (I am wearing)."
+            },
+            {
+                category: "Grammar: Pres. Cont.",
+                question: "Complete: 'He ___ wearing all my clothes!'",
+                options: ["am", "is", "are"],
+                correctIndex: 1,
+                explanation: "We use 'is' with He/She/It."
+            },
+            {
+                category: "Grammar: Pres. Cont.",
+                question: "How do you ask a question in Present Continuous?",
+                options: [
+                    "What you are doing?",
+                    "What are you doing?",
+                    "What doing you are?"
+                ],
+                correctIndex: 1,
+                explanation: "Swap the verb to be: What ARE YOU doing?"
+            },
+            {
+                category: "Grammar: Pres. Cont.",
+                question: "Complete the negative sentence: 'They ___ not listening to me.'",
+                options: ["am", "is", "are"],
+                correctIndex: 2,
+                explanation: "We use 'are' with 'They'."
+            },
+            {
+                category: "Grammar: Pres. Cont.",
+                question: "We use the Present Continuous to talk about...",
+                options: [
+                    "Routines every day.",
+                    "Actions happening right now.",
+                    "The past."
+                ],
+                correctIndex: 1,
+                explanation: "Present Continuous is for actions happening at the moment."
+            },
+            // GRAMMAR 2: CAN / COULD & COMPREHENSION
+            {
+                category: "Grammar: Modals",
+                question: "Complete the sentence: 'I ___ wear your clothes if I want to.'",
+                options: ["can", "could", "am"],
+                correctIndex: 0,
+                explanation: "'Can' shows present ability or possibility."
+            },
+            {
+                category: "Grammar: Modals",
+                question: "Complete Joey's famous joke: '___ I BE wearing any more clothes?'",
+                options: ["Can", "Am", "Could"],
+                correctIndex: 2,
+                explanation: "He uses 'Could' to exaggerate the situation."
+            },
+            {
+                category: "Grammar: To Be",
+                question: "Make this sentence negative: 'I am wearing pants.'",
+                options: [
+                    "I am not wearing pants.",
+                    "I don't wearing pants.",
+                    "I no am wearing pants."
+                ],
+                correctIndex: 0,
+                explanation: "Add 'not' after the verb to be (am not)."
+            },
+            {
+                category: "Context",
+                question: "Why is Joey wearing all the clothes?",
+                options: [
+                    "Because it is very cold outside.",
+                    "To take revenge (play a prank) on Chandler.",
+                    "Because he has no clothes."
+                ],
+                correctIndex: 1,
+                explanation: "It's a prank because Chandler hid his underwear."
+            },
+            {
+                category: "Context",
+                question: "How does Chandler feel in this scene?",
+                options: [
+                    "He is very happy.",
+                    "He is shocked and angry.",
+                    "He is relaxed."
+                ],
+                correctIndex: 1,
+                explanation: "Chandler is shocked and frustrated by Joey's prank."
+            }
+        ];
+
+        // --- 3. App State ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let hasAnswered = false;
+
+        // --- 4. Navigation Functions ---
+        function switchScreen(oldId, newId) {
+            document.getElementById(oldId).classList.replace('active', 'previous');
+            document.getElementById(newId).classList.remove('previous');
+            document.getElementById(newId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            switchScreen('screen-login', 'screen-quiz');
+            loadQuestion();
+        }
+
+        function restartApp() {
+            switchScreen('screen-results', 'screen-login');
+        }
+
+        // --- 5. Quiz Logic ---
+        function loadQuestion() {
+            hasAnswered = false;
+            const q = questions[currentQuestionIndex];
+            
+            // Update UI
+            document.getElementById('q-counter').innerText = `${currentQuestionIndex + 1}/15`;
+            document.getElementById('q-category').innerText = q.category;
+            document.getElementById('q-text').innerText = q.question;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex) / 15) * 100}%`;
+            
+            // Render Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn text-left p-5 font-medium text-lg w-full';
+                btn.innerText = opt;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+
+            // Reset Footer & Feedback
+            const nextBtn = document.getElementById('btn-next');
+            nextBtn.innerText = "CONFIRM ANSWER";
+            nextBtn.disabled = true;
+
+            const fb = document.getElementById('feedback-area');
+            fb.classList.add('hidden');
+        }
+
+        let selectedIndex = null;
+        let selectedBtnEl = null;
+
+        function selectOption(index, btnEl) {
+            if(hasAnswered) return;
+
+            selectedIndex = index;
+            selectedBtnEl = btnEl;
+
+            // Remove selected class from all
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+
+            // Add selected class to clicked
+            btnEl.classList.add('selected');
+
+            // Enable Confirm button
+            const nextBtn = document.getElementById('btn-next');
+            nextBtn.disabled = false;
+        }
+
+        function checkAnswer() {
+            hasAnswered = true;
+            const q = questions[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.correctIndex);
+            const fb = document.getElementById('feedback-area');
+            const nextBtn = document.getElementById('btn-next');
+
+            if(isCorrect) {
+                score++;
+                selectedBtnEl.classList.replace('selected', 'correct');
+                fb.classList.remove('hidden', 'bg-red-500/20', 'border-red-500', 'text-red-400');
+                fb.classList.add('bg-green-500/20', 'border-green-500', 'text-green-400');
+                fb.innerHTML = `✓ PIVOT! <span class="text-slate-200 font-base text-sm ml-2">${q.explanation}</span>`;
+            } else {
+                selectedBtnEl.classList.replace('selected', 'wrong');
+                // Highlight correct one
+                const allBtns = document.querySelectorAll('.option-btn');
+                allBtns[q.correctIndex].classList.add('correct');
+                
+                fb.classList.remove('hidden', 'bg-green-500/20', 'border-green-500', 'text-green-400');
+                fb.classList.add('bg-red-500/20', 'border-red-500', 'text-red-400');
+                fb.innerHTML = `✗ OH MY GOD! <span class="text-slate-200 font-base text-sm ml-2">${q.explanation}</span>`;
+            }
+
+            // Change button action to proceed
+            nextBtn.innerText = (currentQuestionIndex === 14) ? "FINISH EPISODE" : "NEXT QUESTION";
+            nextBtn.onclick = handleNext;
+        }
+
+        function handleNext() {
+            if(currentQuestionIndex < 14) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('progress-bar').style.width = '100%';
+            setTimeout(() => {
+                switchScreen('screen-quiz', 'screen-results');
+                renderResults();
+            }, 300);
+        }
+
+        function renderResults() {
+            document.getElementById('final-score').innerText = score;
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+
+            if (score >= 13) {
+                icon.innerText = "☕";
+                title.innerText = "Central Perk VIP";
+                title.classList.replace('text-white', 'text-fr-yellow');
+                msg.innerText = "Could you BE any smarter? You aced the grammar and vocabulary!";
+            } else if (score >= 8) {
+                icon.innerText = "🛋️";
+                title.innerText = "Good Roommate";
+                title.classList.replace('text-fr-yellow', 'text-indigo-300');
+                msg.innerText = "Not bad! You know the basics, but review the Present Continuous to be perfect.";
+            } else {
+                icon.innerText = "🩲";
+                title.innerText = "Going Commando";
+                title.classList.replace('text-fr-yellow', 'text-fr-red');
+                title.classList.replace('text-indigo-300', 'text-fr-red');
+                msg.innerText = "Oh no! You got confused with the clothes. Let's study the Verb To Be again!";
+            }
+        }
+
+    </script>
+</body>
+</html>
